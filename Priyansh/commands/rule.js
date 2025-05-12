@@ -75,7 +75,7 @@ module.exports.run = ({ event, api, args, permssion }) => {
             if (thisThread.listRule.length != 0) {
                 var msg = "", index = 0;
                 for (const item of thisThread.listRule) msg += `${index+=1}/ ${item}\n`;
-                return api.sendMessage(`=== Group law ===\n\n${msg} \n[Compliance with the group's law will contribute positively to your community!]`, threadID, messageID);
+                return api.sendMessage(`\n${msg} \n`, threadID, messageID);
             }
             else return global.utils.throwError(this.config.name, threadID, messageID);
         }
