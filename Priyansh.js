@@ -343,7 +343,7 @@ loginApiData.setOptions(global.config.FCAOption)
         logger('Hey, thank you for using this Bot', '[ PRIYANSH (RAJPUT) ]');
         logger("Fixed by Priyansh", '[ PRIYANSH (RAJPUT) ]');
       //notif if bot is kaka on palang
-const momentt = require("moment-timezone").tz("Asia/Kolkata");
+const momentt = require("moment-timezone").tz("Asia/Manila");
     const day = momentt.day();
     const time = momentt.format("HH:mm:ss");
 loginApiData.sendMessage(``)
@@ -355,7 +355,7 @@ cron.schedule('0 1 6 * * *', () => {
   });
 }, {
   scheduled: true,
-  timezone: "Asia/Kolkata"
+  timezone: "Asia/Manila"
 });
 cron.schedule('0 1 8 * * *', () => {
   loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
@@ -364,16 +364,16 @@ cron.schedule('0 1 8 * * *', () => {
   });
 }, {
   scheduled: true,
-  timezone: "Asia/Kolkata"
+  timezone: "Asia/Manila"
 });
 cron.schedule('0 0 9 * * *', () => {
   loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
     if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Guys breakfast kiya, nahi kiya to jaldi karlo", now.threadID) : '');
+    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Kumain na kayo? kung hindi pa kain na!", now.threadID) : '');
   });
 }, {
   scheduled: true,
-  timezone: "Asia/Kolkata"
+  timezone: "Asia/Manila"
 });
 cron.schedule('0 1 12 * * *', () => {
   loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
@@ -382,43 +382,43 @@ cron.schedule('0 1 12 * * *', () => {
   });
 }, {
   scheduled: true,
-  timezone: "Asia/Kolkata"
+  timezone: "Asia/Manila"
 });
 cron.schedule('0 1 13 * * *', () => {
   loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
     if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Lunch kiya aapne, nahi kiya to jaldi karlo😉😋", now.threadID) : '');
+    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("nag lunch kana? tinatanong kita baka kasi walang nagtatanong ng ganan sayo:(", now.threadID) : '');
   });
 }, {
   scheduled: true,
-  timezone: "Asia/Kolkata"
+  timezone: "Asia/Manila"
 });
 cron.schedule('0 1 16 * * *', () => {
   loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
     if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Take snacks for bcoz abhi to evening 🌆 baki hai 🙈", now.threadID) : '');
+    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("meryenda na aba!", now.threadID) : '');
   });
 }, {
   scheduled: true,
-  timezone: "Asia/Kolkata"
+  timezone: "Asia/Manila"
 });
 cron.schedule('0 1 18 * * *', () => {
   loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
     if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Good evening 🌆 guys, How's your day ✨", now.threadID) : '');
+    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Good evening guys, How's your day?", now.threadID) : '');
   });
 }, {
   scheduled: true,
-  timezone: "Asia/Kolkata"
+  timezone: "Asia/Manila"
 });
 cron.schedule('0 1 20 * * *', () => {
   loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
     if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("You had dinner? 😋", now.threadID) : '');
+    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("nag dinner kana po ba love?", now.threadID) : '');
   });
 }, {
   scheduled: true,
-  timezone: "Asia/Kolkata"
+  timezone: "Asia/Manila"
 });
 cron.schedule('0 1 21 * * *', () => {
   loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
@@ -427,7 +427,7 @@ cron.schedule('0 1 21 * * *', () => {
   });
 }, {
   scheduled: true,
-  timezone: "Asia/Kolkata"
+  timezone: "Asia/Manila"
 });
 cron.schedule('0 1 22 * * *', () => {
   loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
@@ -436,12 +436,12 @@ cron.schedule('0 1 22 * * *', () => {
   });
 }, {
   scheduled: true,
-  timezone: "Asia/Kolkata"
+  timezone: "Asia/Manila"
 });
 cron.schedule('0 59 23 * * *', () => {
   loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
     if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("So jao guys 💖 bye tc ✨🖤", now.threadID) : '');
+    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Tulog kana hindi ka naman mahal nun e 🤣", now.threadID) : '');
   });
 }, {
   scheduled: true,
