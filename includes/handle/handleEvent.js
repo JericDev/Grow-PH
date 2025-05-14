@@ -4,7 +4,7 @@ const moment = require("moment");
 module.exports = function ({ api, models, Users, Threads, Currencies }) {
   return function ({ event }) {
     const timeStart = Date.now();
-    const time = moment.tz("Asia/Kolkata").format("HH:mm:ss L");
+    const time = moment.tz("Asia/Manila").format("HH:mm:ss L");
 
     const { userBanned, threadBanned } = global.data;
     const { events } = global.client;
