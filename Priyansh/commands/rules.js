@@ -20,17 +20,17 @@ module.exports.run = async({ api, event, args, client, Users, Threads, __GLOBAL,
     const fs = global.nodemodule["fs-extra"];
     
     var ZiaRein3 = `𝙂𝘼𝙂 𝙏𝘼𝙈𝘽𝘼𝙔𝘼𝙉 𝙍𝙐𝙇𝙀𝙎🌶️
-    ⚠️ Respect the Admins.
-    ⚠️ Respect all Members.
-    ⚠️ Scamming is not allowed.
-    ⚠️ Be friendly and avoid toxic behavior.
-    ⚠️ Spamming is not allowed.
-    ⚠️ Sending multiple photos or videos is not allowed.
-    ⚠️ Always use Midman/Middlewoman.
-    ⚠️ Spamming is not allowed.
-    ⚠️ Sending Links is not allowed. = Kick
+⚠️ Respect the Admins.
+⚠️ Respect all Members.
+⚠️ Scamming is not allowed.
+⚠️ Be friendly and avoid toxic behavior.
+⚠️ Spamming is not allowed.
+⚠️ Sending multiple photos or videos is not allowed.
+⚠️ Always use Midman/Middlewoman.
+⚠️ Spamming is not allowed.
+⚠️ Sending Links is not allowed. = Kick
     
-    Failure to follow the rules may result in a warning, kick or ban.!`;
+Failure to follow the rules may result in a warning, kick or ban.!`;
 
     var ZiaRein = [
         "https://i.imgur.com/huumLca.jpg",
