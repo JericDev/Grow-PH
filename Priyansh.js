@@ -445,7 +445,7 @@ cron.schedule('0 59 23 * * *', () => {
   });
 }, {
   scheduled: true,
-  timezone: "Asia/Kolkata"
+  timezone: "Asia/Manila"
 });
     });
 }
