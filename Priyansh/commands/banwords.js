@@ -1,3 +1,14 @@
+module.exports.config = {
+  name: "banwords",
+  version: "1.0.0",
+  hasPermission: 2, // Admin permissions
+  credits: "Jonell Magallanes (Edited by OpenAI)",
+  description: "Manage and enforce banned words with warning and kick system",
+  commandCategory: "admin",
+  usages: "add [word] | remove [word] | list | on | off | unwarn [userID]",
+  cooldowns: 5,
+};
+
 const path = require('path');
 const fs = require('fs');
 
@@ -22,17 +33,6 @@ const loadBannedWords = (threadID) => {
   } else {
     bannedWords[threadID] = [];
   }
-};
-
-module.exports.config = {
-  name: "banwords",
-  version: "1.0.0",
-  hasPermission: 2, // Admin permissions
-  credits: "Jonell Magallanes (Edited by OpenAI)",
-  description: "Manage and enforce banned words with warning and kick system",
-  commandCategory: "admin",
-  usages: "add [word] | remove [word] | list | on | off | unwarn [userID]",
-  cooldowns: 5,
 };
 
 module.exports.handleEvent = async ({ api, event }) => {
