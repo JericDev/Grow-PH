@@ -7,12 +7,12 @@ module.exports = function({ api, models }) {
 	const fs = require("fs");
 	const moment = require('moment-timezone');
 	const axios = require("axios");
-  var day = moment.tz("Asia/Manila").day();
+  var day = moment.tz("Asia/Kolkata").day();
   
   
   const checkttDataPath = __dirname + '/../Priyansh/commands/checktt/';
   setInterval(async() => {
-    const day_now = moment.tz("Asia/Manila").day();
+    const day_now = moment.tz("Asia/Kolkata").day();
     if (day != day_now) {
       day = day_now;
       const checkttData = fs.readdirSync(checkttDataPath);
@@ -200,7 +200,7 @@ module.exports = function({ api, models }) {
 		var data = JSON.parse(fs.readFileSync(datlichPath));
 
 		//GET CURRENT TIME
-		var timeVN = moment().tz('Asia/Manila').format('DD/MM/YYYU_HH:mm:ss');
+		var timeVN = moment().tz('Asia/Kolkata').format('DD/MM/YYYU_HH:mm:ss');
 		timeVN = timeVN.split("_");
 		timeVN = [...timeVN[0].split("/"), ...timeVN[1].split(":")];
 
