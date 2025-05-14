@@ -27,7 +27,7 @@ const loadBannedWords = (threadID) => {
 module.exports.config = {
   name: "banwords",
   version: "1.0.0",
-  hasPermission: 2,
+  hasPermission: 2, // Admin permissions
   credits: "Jonell Magallanes (Edited by OpenAI)",
   description: "Manage and enforce banned words with warning and kick system",
   commandCategory: "admin",
@@ -76,7 +76,7 @@ module.exports.run = async function({ api, event, args }) {
   const threadInfo = await api.getThreadInfo(threadID);
   const isAdmin = threadInfo.adminIDs.some(ad => ad.id === api.getCurrentUserID());
   if (!isAdmin) {
-    return api.sendMessage("🛡️ Bot needs to be an admin to manage banwords.", threadID, messageID);
+    return api.sendMessage("🛡️ Only admins can manage banned words.", threadID, messageID);
   }
 
   const action = args[0].toLowerCase();
