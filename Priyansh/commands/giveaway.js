@@ -21,11 +21,11 @@ module.exports.handleReaction = async ({ api, event, Users, handleReaction }) =>
 
 	if (hasReacted) {
 		if (!data.joined.includes(userID)) data.joined.push(userID);
-		api.sendMessage(`${userName} đã tham gia thành công giveaway có ID: #${handleReaction.ID}`, event.threadID);
+		api.sendMessage(`${userName} successfully participated in the giveaway with ID: #${handleReaction.ID}`, event.threadID);
 	} else {
 		const index = data.joined.indexOf(userID);
 		if (index !== -1) data.joined.splice(index, 1);
-		api.sendMessage(`${userName} đã rời giveaway có ID: #${handleReaction.ID}`, event.threadID);
+		api.sendMessage(`${userName} left the giveaway with ID: #${handleReaction.ID}`, event.threadID);
 	}
 
 	global.data.GiveAway.set(handleReaction.ID, data);
@@ -39,14 +39,14 @@ module.exports.run = async ({ api, event, args, Users }) => {
 	switch (args[0]) {
 		case "create": {
 			const reward = args.slice(1).join(" ");
-			if (!reward) return api.sendMessage("Vui lòng nhập phần thưởng!", threadID, event.messageID);
+			if (!reward) return api.sendMessage("Please enter the prize!", threadID, event.messageID);
 
 			const ID = Math.floor(100000 + Math.random() * 900000).toString();
 			const threadInfo = await api.getThreadInfo(threadID);
 			const authorName = threadInfo.nicknames?.[senderID] || (await Users.getInfo(senderID)).name;
 
 			api.sendMessage(
-				`====== 🎁 GIVEAWAY 🎁 ======\n👤 Tạo bởi: ${authorName}\n🎁 Phần thưởng: ${reward}\n🆔 ID: #${ID}\n\n✅ Thả cảm xúc vào tin nhắn này để tham gia!`,
+				`====== 🎁 GIVEAWAY 🎁 ======\n👤 Created by: ${authorName}\n🎁 Prize: ${reward}\n🆔 ID: #${ID}\n\n✅ Drop a reaction on this message to join!`,
 				threadID,
 				(err, info) => {
 					if (err) return;
@@ -72,13 +72,13 @@ module.exports.run = async ({ api, event, args, Users }) => {
 
 		case "details": {
 			const ID = args[1]?.replace("#", "");
-			if (!ID) return api.sendMessage("Vui lòng cung cấp ID GiveAway!", threadID, event.messageID);
+			if (!ID) return api.sendMessage("Please provide GiveAway ID!", threadID, event.messageID);
 
 			const data = global.data.GiveAway.get(ID);
-			if (!data) return api.sendMessage("Không tìm thấy GiveAway với ID đã cung cấp!", threadID, event.messageID);
+			if (!data) return api.sendMessage("GiveAway not found with provided ID!", threadID, event.messageID);
 
 			api.sendMessage(
-				`====== 🎁 CHI TIẾT GIVEAWAY ======\n👤 Tạo bởi: ${data.author} (${data.authorID})\n🎁 Phần thưởng: ${data.reward}\n🆔 ID: #${data.ID}\n👥 Tham gia: ${data.joined.length} người\n📌 Trạng thái: ${data.status}`,
+				`====== 🎁 GIVEAWAY DETAILS ======\n👤 Created by: ${data.author} (${data.authorID})\n🎁 Prize: ${data.reward}\n🆔 ID: #${data.ID}\n👥 Join: ${data.joined.length} People\n📌 Status: ${data.status}`,
 				threadID,
 				data.messageID
 			);
@@ -87,35 +87,35 @@ module.exports.run = async ({ api, event, args, Users }) => {
 
 		case "join": {
 			const ID = args[1]?.replace("#", "");
-			if (!ID) return api.sendMessage("Vui lòng cung cấp ID GiveAway!", threadID, event.messageID);
+			if (!ID) return api.sendMessage("Please provide GiveAway ID!", threadID, event.messageID);
 
 			const data = global.data.GiveAway.get(ID);
-			if (!data) return api.sendMessage("Không tìm thấy GiveAway với ID đã cung cấp!", threadID, event.messageID);
-			if (data.joined.includes(senderID)) return api.sendMessage("Bạn đã tham gia giveaway này rồi!", threadID, event.messageID);
+			if (!data) return api.sendMessage("Giveaway not found with provided ID!", threadID, event.messageID);
+			if (data.joined.includes(senderID)) return api.sendMessage("You have already entered this giveaway!", threadID, event.messageID);
 
 			data.joined.push(senderID);
 			global.data.GiveAway.set(ID, data);
 
 			const threadInfo = await api.getThreadInfo(threadID);
 			const name = threadInfo.nicknames?.[senderID] || (await Users.getInfo(senderID)).name;
-			api.sendMessage(`${name} đã tham gia thành công giveaway có ID: #${ID}`, threadID);
+			api.sendMessage(`${name} Successfully entered giveaway with ID: #${ID}`, threadID);
 			break;
 		}
 
 		case "roll": {
 			const ID = args[1]?.replace("#", "");
-			if (!ID) return api.sendMessage("Vui lòng cung cấp ID GiveAway!", threadID, event.messageID);
+			if (!ID) return api.sendMessage("Please provide Giveaway ID!", threadID, event.messageID);
 
 			const data = global.data.GiveAway.get(ID);
-			if (!data) return api.sendMessage("Không tìm thấy GiveAway với ID đã cung cấp!", threadID, event.messageID);
-			if (data.authorID !== senderID) return api.sendMessage("Bạn không phải là người tổ chức giveaway này!", threadID, event.messageID);
-			if (data.joined.length === 0) return api.sendMessage("Không có ai tham gia giveaway!", threadID, event.messageID);
+			if (!data) return api.sendMessage("Giveaway not found with provided ID!", threadID, event.messageID);
+			if (data.authorID !== senderID) return api.sendMessage("You are not the organizer of this giveaway!", threadID, event.messageID);
+			if (data.joined.length === 0) return api.sendMessage("No one entered the giveaway!", threadID, event.messageID);
 
 			const winnerID = data.joined[Math.floor(Math.random() * data.joined.length)];
 			const winnerInfo = await Users.getInfo(winnerID);
 
 			api.sendMessage({
-				body: `🎉 Chúc mừng ${winnerInfo.name} đã thắng giveaway có ID: #${ID}\n🎁 Phần thưởng: ${data.reward}\n📨 Liên hệ: ${data.author} (fb.me/${data.authorID})`,
+				body: `🎉 Congratulations ${winnerInfo.name} won giveaway with ID: #${ID}\n🎁 Prize: ${data.reward}\n📨 Contact to claim the prize: ${data.author} (fb.me/${data.authorID})`,
 				mentions: [{
 					tag: winnerInfo.name,
 					id: winnerID
@@ -126,16 +126,16 @@ module.exports.run = async ({ api, event, args, Users }) => {
 
 		case "end": {
 			const ID = args[1]?.replace("#", "");
-			if (!ID) return api.sendMessage("Vui lòng cung cấp ID GiveAway!", threadID, event.messageID);
+			if (!ID) return api.sendMessage("Please provide GiveAway ID!", threadID, event.messageID);
 
 			const data = global.data.GiveAway.get(ID);
-			if (!data) return api.sendMessage("Không tìm thấy GiveAway với ID đã cung cấp!", threadID, event.messageID);
-			if (data.authorID !== senderID) return api.sendMessage("Bạn không phải là người tổ chức giveaway này!", threadID, event.messageID);
+			if (!data) return api.sendMessage("Giveaway not found with provided ID!", threadID, event.messageID);
+			if (data.authorID !== senderID) return api.sendMessage("You are not the organizer of this giveaway!", threadID, event.messageID);
 
 			data.status = "ended";
 			global.data.GiveAway.set(ID, data);
 			api.unsendMessage(data.messageID);
-			api.sendMessage(`🔚 Giveaway ID: #${ID} đã kết thúc!`, threadID);
+			api.sendMessage(`🔚 Giveaway ID: #${ID} ended!`, threadID);
 			break;
 		}
 
