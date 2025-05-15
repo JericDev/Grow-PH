@@ -3,12 +3,12 @@ const fs = require('fs');
 
 module.exports.config = {
   name: "banwords",
-  version: "2.0.1",
+  version: "2.0.2",
   hasPermssion: 0,
   credits: "Jonell Magallanes (Updated by OpenAI)",
   description: "Manage and enforce banned words with warning and kick system",
   commandCategory: "admin",
-  usages: "add [word] | remove [word] | list | on | off | unwarn [mention/userID]",
+  usages: "add/remove/list/on/off/unwarn <mention/userID>",
   cooldowns: 5
 };
 
@@ -78,7 +78,7 @@ module.exports.handleEvent = async ({ api, event }) => {
 
 module.exports.run = async function ({ api, event, args }) {
   const { threadID, messageID, senderID, mentions } = event;
-  if (!args[0]) return api.sendMessage("❗ Use: add/remove/list/on/off/unwarn[m/userID]", threadID, messageID);
+  if (!args[0]) return api.sendMessage("❗ Use: add/remove/list/on/off/unwarn <mention/userID>", threadID, messageID);
 
   const config = global.config || {};
   const isGlobalAdmin = config.ADMINBOT?.includes(senderID);
@@ -135,13 +135,21 @@ module.exports.run = async function ({ api, event, args }) {
 
     case "unwarn": {
       const userID = args[1] || Object.keys(mentions)[0];
-      if (!userID) return api.sendMessage("❗ Provide user ID or mention to reset warnings.", threadID, messageID);
-      banwordsData[threadID].warnings[userID] = 0;
+      if (!userID) return api.sendMessage("❗ Provide a user ID or mention to reset warnings.", threadID, messageID);
+
+      ensureThreadData(threadID);
+      const threadWarnings = banwordsData[threadID].warnings;
+
+      if (!threadWarnings[userID]) {
+        return api.sendMessage(`⚠️ User <@${userID}> has no warnings to remove.`, threadID, messageID);
+      }
+
+      delete threadWarnings[userID]; // Remove warning entry
       saveData();
-      return api.sendMessage(`✅ Warnings reset for user ID: ${userID}`, threadID, messageID);
+      return api.sendMessage(`✅ Warnings removed for user <@${userID}>.`, threadID, messageID);
     }
 
     default:
-      return api.sendMessage("❌ Invalid action. Use add, remove, list, on, off, unwarn, or checkwarn.", threadID, messageID);
+      return api.sendMessage("❌ Invalid action. Use add, remove, list, on, off, or unwarn.", threadID, messageID);
   }
 };
