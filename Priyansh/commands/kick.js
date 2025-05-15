@@ -1,39 +1,101 @@
 module.exports.config = {
-	name: "kick",
-	version: "1.0.1", 
-	hasPermssion: 1,
-	credits: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭",
-  description: "the person you need to remove from the group by tag",
-	commandCategory: "System", 
-	usages: "[tag]", 
-	cooldowns: 0,
+  name: "kick",
+  version: "1.0.2",
+  hasPermssion: 2, // Admin only by default, but actual check below
+  credits: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭 (fixed by ChatGPT)",
+  description: "Kick a user by mention or UID with reason; logs sent to GOD admins",
+  commandCategory: "System",
+  usages: "<mention or uid> <reason>",
+  cooldowns: 0,
 };
 
 module.exports.languages = {
-	"vi": {
-		"error": "Đã có lỗi xảy ra, vui lòng thử lại sau",
-		"needPermssion": "Cần quyền quản trị viên nhóm\nVui lòng thêm và thử lại!",
-		"missingTag": "Bạn phải tag người cần kick"
-	},
-	"en": {
-		"error": "Error! An error occurred. Please try again later!",
-		"needPermssion": "Need group admin\nPlease add and try again!",
-		"missingTag": "You need tag some person to kick"
-	}
+  "vi": {
+    "error": "Đã có lỗi xảy ra, vui lòng thử lại sau",
+    "needPermssion": "Cần quyền quản trị viên nhóm\nVui lòng thêm và thử lại!",
+    "missingUser": "Bạn phải tag hoặc nhập UID người cần kick",
+    "missingReason": "Bạn phải nhập lý do kick",
+    "notAdminBot": "Chỉ Admin Bot mới có thể sử dụng lệnh này",
+    "kicked": "Đã kick {name} khỏi nhóm\nLý do: {reason}"
+  },
+  "en": {
+    "error": "Error! An error occurred. Please try again later!",
+    "needPermssion": "Need group admin permission\nPlease add and try again!",
+    "missingUser": "You need to tag or enter the UID of the person to kick",
+    "missingReason": "You need to enter the reason for kicking",
+    "notAdminBot": "Only Bot Admins can use this command",
+    "kicked": "Kicked {name} from the group\nReason: {reason}"
+  }
 }
 
-module.exports.run = async function({ api, event, getText, Threads }) {
-	var mention = Object.keys(event.mentions);
-	try {
-		let dataThread = (await Threads.getData(event.threadID)).threadInfo;
-		if (!dataThread.adminIDs.some(item => item.id == api.getCurrentUserID())) return api.sendMessage(getText("needPermssion"), event.threadID, event.messageID);
-		if(!mention[0]) return api.sendMessage("You have to tag the need to kick",event.threadID);
-		if (dataThread.adminIDs.some(item => item.id == event.senderID)) {
-			for (const o in mention) {
-				setTimeout(() => {
-					api.removeUserFromGroup(mention[o],event.threadID) 
-				},3000)
-			}
-		}
-	} catch { return api.sendMessage(getText("error"),event.threadID) }
-}
+module.exports.run = async function({ api, event, args, getText, Threads, Users }) {
+  const senderID = event.senderID;
+  const threadID = event.threadID;
+
+  try {
+    // Only allow Bot Admins to run this command
+    if (!global.config.ADMINBOT.includes(senderID)) {
+      return api.sendMessage(getText("notAdminBot"), threadID, event.messageID);
+    }
+
+    // Get thread info to check if bot is admin in this group
+    const dataThread = (await Threads.getData(threadID)).threadInfo;
+    const botID = api.getCurrentUserID();
+
+    if (!dataThread.adminIDs.some(item => item.id == botID)) {
+      return api.sendMessage(getText("needPermssion"), threadID, event.messageID);
+    }
+
+    // Extract target user from mention or UID argument
+    const mentionIDs = Object.keys(event.mentions);
+    let targetID;
+
+    if (mentionIDs.length > 0) {
+      targetID = mentionIDs[0];
+      args.shift(); // Remove mention from args to isolate reason
+    } else if (args[0]) {
+      targetID = args[0];
+      args.shift(); // Remove UID from args
+    } else {
+      return api.sendMessage(getText("missingUser"), threadID, event.messageID);
+    }
+
+    // Get reason string
+    const reason = args.join(" ");
+    if (!reason) return api.sendMessage(getText("missingReason"), threadID, event.messageID);
+
+    // Kick user from group
+    await api.removeUserFromGroup(targetID, threadID);
+
+    // Get user names for logs and confirmation
+    const targetInfo = await Users.getInfo(targetID);
+    const targetName = targetInfo.name || targetID;
+
+    const senderInfo = await Users.getInfo(senderID);
+    const senderName = senderInfo.name || senderID;
+
+    // Send confirmation message to group
+    api.sendMessage(
+      getText("kicked").replace("{name}", targetName).replace("{reason}", reason),
+      threadID
+    );
+
+    // Prepare log message for admins
+    const logMessage = 
+      `🚨 User kicked 🚨\n` +
+      `👤 Kicked user: ${targetName} (${targetID})\n` +
+      `👮 Kicked by: ${senderName} (${senderID})\n` +
+      `🧾 Reason: ${reason}\n` +
+      `💬 Group: ${event.threadName || "unknown"} (${threadID})`;
+
+    // Send logs to all GOD admins
+    const logRecipients = global.config.GOD || [];
+    for (const uid of logRecipients) {
+      api.sendMessage(logMessage, uid);
+    }
+
+  } catch (error) {
+    console.error(error);
+    return api.sendMessage(getText("error"), threadID, event.messageID);
+  }
+};
