@@ -2,7 +2,7 @@ module.exports.config = {
 	name: "giveaway",
 	version: "0.0.1",
 	hasPermssion: 0,
-	credits: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭 (fixed by OpenAI)",
+	credits: "Jeric",
 	description: "Simple giveaway system",
 	commandCategory: "other",
 	usages: "[create/details/join/roll/end] [IDGiveAway]",
