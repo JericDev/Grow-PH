@@ -8,7 +8,7 @@ module.exports.config = {
   credits: "Jonell Magallanes (Unified by OpenAI)",
   description: "Manage and enforce banned words with warning and kick system",
   commandCategory: "admin",
-  usages: "add [word] | remove [word] | list | on | off | unwarn [userID]",
+  usages: "add [word] | remove [word] | list | on | off | warn [userID] | unwarn [userID]",
   cooldowns: 5
 };
 
@@ -65,6 +65,8 @@ module.exports.handleEvent = async ({ api, event }) => {
 
   if (currentWarnings >= 3) {
     api.sendMessage(`❌ You used banned words 3 times. You are now being removed from the group.`, threadID);
+    delete threadWarnings[senderID]; // optional: cleanup
+    saveData();
     return api.removeUserFromGroup(senderID, threadID);
   } else {
     return api.sendMessage(
@@ -77,7 +79,7 @@ module.exports.handleEvent = async ({ api, event }) => {
 
 module.exports.run = async function ({ api, event, args }) {
   const { threadID, messageID, senderID } = event;
-  if (!args[0]) return api.sendMessage("❗ Use: add/remove/list/on/off/unwarn [word/userID]", threadID, messageID);
+  if (!args[0]) return api.sendMessage("❗ Use: add/remove/list/on/off/warn/unwarn [word/userID]", threadID, messageID);
 
   const config = global.config || {};
   const isGlobalAdmin = config.ADMINBOT?.includes(senderID);
@@ -97,19 +99,21 @@ module.exports.run = async function ({ api, event, args }) {
   switch (action) {
     case "add":
       if (!word) return api.sendMessage("❗ Provide a word to ban.", threadID, messageID);
-      if (bannedWords.includes(word)) {
-        return api.sendMessage(`⚠️ "${word}" is already banned.`, threadID, messageID);
+      const lowerWord = word.toLowerCase();
+      if (bannedWords.includes(lowerWord)) {
+        return api.sendMessage(`⚠️ "${lowerWord}" is already banned.`, threadID, messageID);
       }
-      bannedWords.push(word);
+      bannedWords.push(lowerWord);
       fs.writeFileSync(wordFilePath, JSON.stringify(bannedWords), "utf8");
-      return api.sendMessage(`✅ "${word}" added to the banned list.`, threadID, messageID);
+      return api.sendMessage(`✅ "${lowerWord}" added to the banned list.`, threadID, messageID);
 
     case "remove":
-      const index = bannedWords.indexOf(word);
-      if (index === -1) return api.sendMessage(`❌ "${word}" is not in the banned list.`, threadID, messageID);
+      const removeWord = word.toLowerCase();
+      const index = bannedWords.indexOf(removeWord);
+      if (index === -1) return api.sendMessage(`❌ "${removeWord}" is not in the banned list.`, threadID, messageID);
       bannedWords.splice(index, 1);
       fs.writeFileSync(wordFilePath, JSON.stringify(bannedWords), "utf8");
-      return api.sendMessage(`✅ "${word}" removed from the banned list.`, threadID, messageID);
+      return api.sendMessage(`✅ "${removeWord}" removed from the banned list.`, threadID, messageID);
 
     case "list":
       if (bannedWords.length === 0) return api.sendMessage("📭 No banned words set.", threadID, messageID);
@@ -125,6 +129,23 @@ module.exports.run = async function ({ api, event, args }) {
       saveData();
       return api.sendMessage("❎ Banwords system deactivated.", threadID, messageID);
 
+    case "warn":
+      const warnUserID = args[1];
+      if (!warnUserID) return api.sendMessage("❗ Provide user ID to warn.", threadID, messageID);
+      const warnings = banwordsData[threadID].warnings;
+      warnings[warnUserID] = (warnings[warnUserID] || 0) + 1;
+      const currentWarn = warnings[warnUserID];
+      saveData();
+
+      if (currentWarn >= 3) {
+        api.sendMessage(`❌ User ${warnUserID} reached 3 warnings and will be removed.`, threadID);
+        delete warnings[warnUserID];
+        saveData();
+        return api.removeUserFromGroup(warnUserID, threadID);
+      } else {
+        return api.sendMessage(`⚠️ Warning ${currentWarn}/3 issued to user ID ${warnUserID}.`, threadID, messageID);
+      }
+
     case "unwarn":
       const userID = args[1];
       if (!userID) return api.sendMessage("❗ Provide user ID to reset warnings.", threadID, messageID);
@@ -133,6 +154,6 @@ module.exports.run = async function ({ api, event, args }) {
       return api.sendMessage(`✅ Warnings reset for user ID: ${userID}`, threadID, messageID);
 
     default:
-      return api.sendMessage("❌ Invalid action. Use add, remove, list, on, off, unwarn.", threadID, messageID);
+      return api.sendMessage("❌ Invalid action. Use add, remove, list, on, off, warn, or unwarn.", threadID, messageID);
   }
 };
