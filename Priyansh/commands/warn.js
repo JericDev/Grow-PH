@@ -2,13 +2,13 @@ const path = require('path');
 const fs = require('fs');
 
 module.exports.config = {
-  name: "warn",
-  version: "1.0.0",
+  name: "warning",
+  version: "1.0.1",
   hasPermssion: 0,
-  credits: "You + OpenAI",
-  description: "Warn users manually; warnings combined with banwords system",
+  credits: "OpenAI",
+  description: "Manually warn a user (admin-only).",
   commandCategory: "admin",
-  usages: "warn <reply|mention|uid>",
+  usages: "[mention/reply/uid]",
   cooldowns: 5
 };
 
@@ -18,62 +18,63 @@ let banwordsData = {};
 if (fs.existsSync(saveFile)) {
   banwordsData = JSON.parse(fs.readFileSync(saveFile, "utf8"));
 }
+const saveData = () => fs.writeFileSync(saveFile, JSON.stringify(banwordsData, null, 2), "utf8");
 
-function saveBanwordsData() {
-  fs.writeFileSync(saveFile, JSON.stringify(banwordsData, null, 2), "utf8");
-}
-
-function ensureThreadData(threadID) {
+const ensureThreadData = (threadID) => {
   if (!banwordsData[threadID]) {
     banwordsData[threadID] = {
       active: false,
       warnings: {}
     };
   }
-}
+};
 
 module.exports.run = async function ({ api, event, args }) {
-  const { threadID, messageID, senderID, mentions, type, messageReply } = event;
+  const { threadID, messageID, senderID, mentions, reply_message } = event;
+
   const config = global.config || {};
   const isGlobalAdmin = config.ADMINBOT?.includes(senderID);
-
-  // Fetch thread admins
   const threadInfo = await api.getThreadInfo(threadID);
-  const adminIDs = threadInfo.adminIDs || [];
-  const isGroupAdmin = adminIDs.some(ad => ad.id === senderID);
+  const isGroupAdmin = threadInfo.adminIDs?.some(ad => ad.id === senderID);
 
-  // Only admin or global admin can warn
   if (!isGlobalAdmin && !isGroupAdmin) {
-    return api.sendMessage("⛔ Only owner or group admins can use this command.", threadID, messageID);
-  }
-
-  // Determine user to warn
-  let userToWarn;
-
-  if (type === "message_reply" && messageReply) {
-    userToWarn = messageReply.senderID;
-  } else if (mentions && Object.keys(mentions).length > 0) {
-    userToWarn = Object.keys(mentions)[0];
-  } else if (args[1]) {
-    userToWarn = args[1];
-  }
-
-  if (!userToWarn) {
-    return api.sendMessage("❗ Please reply to a message, mention a user, or provide a user ID to warn.", threadID, messageID);
+    return api.sendMessage("⛔ Only group admins or bot owner can use this command.", threadID, messageID);
   }
 
   ensureThreadData(threadID);
+  const threadWarnings = banwordsData[threadID].warnings;
 
-  // Increment warning
-  banwordsData[threadID].warnings[userToWarn] = (banwordsData[threadID].warnings[userToWarn] || 0) + 1;
-  saveBanwordsData();
+  // Determine target user
+  let targetID;
+  let targetName;
 
-  const warnCount = banwordsData[threadID].warnings[userToWarn];
-
-  if (warnCount >= 3) {
-    await api.sendMessage(`❌ User has reached 3 warnings and will be removed from the group.`, threadID);
-    await api.removeUserFromGroup(userToWarn, threadID);
+  if (reply_message) {
+    targetID = reply_message.senderID;
+    targetName = reply_message.senderName;
+  } else if (Object.keys(mentions).length > 0) {
+    targetID = Object.keys(mentions)[0];
+    targetName = mentions[targetID];
+  } else if (args[0]) {
+    targetID = args[0];
+    targetName = `User ${targetID}`;
   } else {
-    await api.sendMessage(`⚠️ Warning ${warnCount}/3 for user.`, threadID, messageID);
+    return api.sendMessage("❗ Please reply to a message, mention a user, or provide a user ID to warn.", threadID, messageID);
+  }
+
+  // Apply warning
+  threadWarnings[targetID] = (threadWarnings[targetID] || 0) + 1;
+  const currentWarnings = threadWarnings[targetID];
+  saveData();
+
+  if (currentWarnings >= 3) {
+    api.sendMessage(`❌ ${targetName} has reached 3 warnings and will now be removed.`, threadID);
+    return api.removeUserFromGroup(targetID, threadID);
+  } else {
+    return api.sendMessage(
+      `⚠️ ${targetName} has been warned.\nWarning ${currentWarnings}/3.`,
+      threadID,
+      messageID
+    );
   }
 };
+
