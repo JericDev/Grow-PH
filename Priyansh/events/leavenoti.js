@@ -40,16 +40,16 @@ module.exports.run = async function({ api, event, Users, Threads }) {
 
 	if (existsSync(path)) mkdirSync(path, { recursive: true });
 
-(typeof data.customLeave == "undefined") ? msg = "[⚜️] 👉🏻👉🏻 {name} 👈🏻👈🏻▬▬▬▬ KO Bhaga diya  .... {type}  [⚜️]\n😒😒\n🌺🌸🌺 🙏🏻 👉🏻👉🏻👉🏻 {name} 👈🏻👈🏻 ●▬▬▬▬๑۩۩BEHTI HAWA SA THAA WO 😥 uDTI PATANG✨✨ SAA THAA WOO ♥ KAHA GAYA USE DHOONDHO🤔🤔🤔●▬▬▬▬๑۩ 🙏🏻💐<3😊💔\n\n[❤️‍🔥] 🖤🖤😥😥...Good {session} || {time}" : msg = data.customLeave;
+(typeof data.customLeave == "undefined") ? msg = "Uy may nangiwan!\n {name}\nReason:Left the group\nOK lang! Ganyan naman kayo, sanay na kaming iniiwanan!" : msg = data.customLeave;
 	msg = msg.replace(/\{name}/g, name).replace(/\{type}/g, type).replace(/\{session}/g, hours <= 10 ? "𝙈𝙤𝙧𝙣𝙞𝙣𝙜" : 
     hours > 10 && hours <= 12 ? "𝘼𝙛𝙩𝙚𝙧𝙉𝙤𝙤𝙣" :
     hours > 12 && hours <= 18 ? "𝙀𝙫𝙚𝙣𝙞𝙣𝙜" : "𝙉𝙞𝙜𝙝𝙩").replace(/\{time}/g, time);  
 
-	const randomPath = readdirSync(join(__dirname, "cache", "leaveGif", "randomgif"));
+	const randomPath = readdirSync(join(__dirname, "cache", "leaveGif"));
 
 	if (existsSync(pathGif)) formPush = { body: msg, attachment: createReadStream(pathGif) }
 	else if (randomPath.length != 0) {
-		const pathRandom = join(__dirname, "cache", "leaveGif", "randomgif",`${randomPath[Math.floor(Math.random() * randomPath.length)]}`);
+		const pathRandom = join(__dirname, "cache", "leaveGif",`${randomPath[Math.floor(Math.random() * randomPath.length)]}`);
 		formPush = { body: msg, attachment: createReadStream(pathRandom) }
 	}
 	else formPush = { body: msg }
