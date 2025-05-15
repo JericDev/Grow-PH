@@ -46,7 +46,7 @@ module.exports.run = async ({ api, event, args, Users }) => {
 			const authorName = threadInfo.nicknames?.[senderID] || (await Users.getInfo(senderID)).name;
 
 			api.sendMessage(
-				`====== 🎁 GIVEAWAY 🎁 ======\n👤 Created by: ${authorName}\n🎁 Prize: ${reward}\n🆔 ID: #${ID}\n\n✅ Drop a reaction on this message to join!`,
+				`======GIVEAWAY======\n👤 Created by: ${authorName}\n🎁 Prize: ${reward}\n🆔 ID: #${ID}\n\n✅ Drop a reaction on this message to join!`,
 				threadID,
 				(err, info) => {
 					if (err) return;
