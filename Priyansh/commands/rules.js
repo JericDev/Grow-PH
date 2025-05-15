@@ -22,13 +22,13 @@ module.exports.run = async({ api, event, args, client, Users, Threads, __GLOBAL,
     var ZiaRein3 = `𝙂𝘼𝙂 𝙏𝘼𝙈𝘽𝘼𝙔𝘼𝙉 𝙍𝙐𝙇𝙀𝙎🌶️
 ⚠️ Respect the Admins.
 ⚠️ Respect all Members.
-⚠️ Scamming is not allowed.
-⚠️ Be friendly and avoid toxic behavior.
-⚠️ Spamming is not allowed.
-⚠️ Sending multiple photos or videos is not allowed.
 ⚠️ Always use Midman/Middlewoman.
+⚠️ Be friendly and avoid toxic behavior.
+⚠️ Sending multiple photos or videos is not allowed.
+⚠️ Swearing is not allowed.
+⚠️ Scamming is not allowed.
 ⚠️ Spamming is not allowed.
-⚠️ Sending Links is not allowed. = Kick
+⚠️ Sending Links is not allowed.
     
 Failure to follow the rules may result in a warning, kick or ban.!`;
 
