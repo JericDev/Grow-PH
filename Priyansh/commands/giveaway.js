@@ -46,7 +46,7 @@ module.exports.run = async ({ api, event, args, Users }) => {
 			const authorName = threadInfo.nicknames?.[senderID] || (await Users.getInfo(senderID)).name;
 
 			api.sendMessage(
-				`======GIVEAWAY======\n👤 Created by: ${authorName}\n🎁 Prize: ${reward}\n🆔 ID: #${ID}\n\n✅ Drop a reaction on this message to join!`,
+				`======GIVEAWAY======\n👤 Created by: ${authorName}\n🎁 Prize: ${reward}\n🆔 GID: #${ID}\n\n✅ React on this message to join!`,
 				threadID,
 				(err, info) => {
 					if (err) return;
@@ -78,7 +78,7 @@ module.exports.run = async ({ api, event, args, Users }) => {
 			if (!data) return api.sendMessage("GiveAway not found with provided ID!", threadID, event.messageID);
 
 			api.sendMessage(
-				`======GIVEAWAY DETAILS======\n👤 Created by: ${data.author} (${data.authorID})\n🎁 Prize: ${data.reward}\n🆔 ID: #${data.ID}\n👥 Join: ${data.joined.length} People\n📌 Status: ${data.status}`,
+				`======GIVEAWAY DETAILS======\n👤 Created by: ${data.author} (${data.authorID})\n🎁 Prize: ${data.reward}\n🆔 GID: #${data.ID}\n👥 Join: ${data.joined.length} People\n📌 Status: ${data.status}`,
 				threadID,
 				data.messageID
 			);
@@ -115,7 +115,7 @@ module.exports.run = async ({ api, event, args, Users }) => {
 			const winnerInfo = await Users.getInfo(winnerID);
 
 			api.sendMessage({
-				body: `🎉 Congratulations ${winnerInfo.name} won giveaway with ID: #${ID}\n🎁 Prize: ${data.reward}\n📨 Contact to claim the prize: ${data.author} (fb.me/${data.authorID})`,
+				body: `🎉 Congratulations ${winnerInfo.name} you win giveaway with GID: #${ID}\n🎁 Prize: ${data.reward}\n📨 Contact to claim the prize: ${data.author} (fb.me/${data.authorID})`,
 				mentions: [{
 					tag: winnerInfo.name,
 					id: winnerID
