@@ -78,7 +78,7 @@ module.exports.handleEvent = async ({ api, event }) => {
 
 module.exports.run = async function ({ api, event, args }) {
   const { threadID, messageID, senderID, mentions } = event;
-  if (!args[0]) return api.sendMessage("❗ Use: add/remove/list/on/off/unwarn/checkwarn [word/userID]", threadID, messageID);
+  if (!args[0]) return api.sendMessage("❗ Use: add/remove/list/on/off/unwarn[m/userID]", threadID, messageID);
 
   const config = global.config || {};
   const isGlobalAdmin = config.ADMINBOT?.includes(senderID);
@@ -139,13 +139,6 @@ module.exports.run = async function ({ api, event, args }) {
       banwordsData[threadID].warnings[userID] = 0;
       saveData();
       return api.sendMessage(`✅ Warnings reset for user ID: ${userID}`, threadID, messageID);
-    }
-
-    case "checkwarn": {
-      const userID = args[1] || Object.keys(mentions)[0];
-      if (!userID) return api.sendMessage("❗ Provide user ID or mention to check warnings.", threadID, messageID);
-      const warns = banwordsData[threadID].warnings[userID] || 0;
-      return api.sendMessage(`⚠️ User ID: ${userID} has ${warns}/3 warnings.`, threadID, messageID);
     }
 
     default:
