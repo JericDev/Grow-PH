@@ -78,7 +78,7 @@ module.exports.run = async ({ api, event, args, Users }) => {
 			if (!data) return api.sendMessage("GiveAway not found with provided ID!", threadID, event.messageID);
 
 			api.sendMessage(
-				`====== 🎁 GIVEAWAY DETAILS ======\n👤 Created by: ${data.author} (${data.authorID})\n🎁 Prize: ${data.reward}\n🆔 ID: #${data.ID}\n👥 Join: ${data.joined.length} People\n📌 Status: ${data.status}`,
+				`======GIVEAWAY DETAILS======\n👤 Created by: ${data.author} (${data.authorID})\n🎁 Prize: ${data.reward}\n🆔 ID: #${data.ID}\n👥 Join: ${data.joined.length} People\n📌 Status: ${data.status}`,
 				threadID,
 				data.messageID
 			);
