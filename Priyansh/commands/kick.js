@@ -1,6 +1,6 @@
 module.exports.config = {
   name: "kick",
-  version: "1.0.2",
+  version: "1.0.3",
   hasPermssion: 2, // Admin only by default, but actual check below
   credits: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭 (fixed by ChatGPT)",
   description: "Kick a user by mention or UID with reason; logs sent to GOD admins",
@@ -16,6 +16,8 @@ module.exports.languages = {
     "missingUser": "Bạn phải tag hoặc nhập UID người cần kick",
     "missingReason": "Bạn phải nhập lý do kick",
     "notAdminBot": "Chỉ Admin Bot mới có thể sử dụng lệnh này",
+    "cannotKickOwner": "❌ Không thể kick chủ nhóm.",
+    "cannotKickGOD": "❌ Không thể kick GOD Admin.",
     "kicked": "Đã kick {name} khỏi nhóm\nLý do: {reason}"
   },
   "en": {
@@ -24,6 +26,8 @@ module.exports.languages = {
     "missingUser": "You need to tag or enter the UID of the person to kick",
     "missingReason": "You need to enter the reason for kicking",
     "notAdminBot": "Only Bot Admins can use this command",
+    "cannotKickOwner": "❌ Cannot kick the Group Owner.",
+    "cannotKickGOD": "❌ Cannot kick a GOD Admin.",
     "kicked": "Kicked {name} from the group\nReason: {reason}"
   }
 }
@@ -58,6 +62,16 @@ module.exports.run = async function({ api, event, args, getText, Threads, Users 
       args.shift(); // Remove UID from args
     } else {
       return api.sendMessage(getText("missingUser"), threadID, event.messageID);
+    }
+
+    // Prevent kicking the group owner
+    if (targetID === dataThread.ownerID) {
+      return api.sendMessage(getText("cannotKickOwner"), threadID, event.messageID);
+    }
+
+    // Prevent kicking any GOD admins
+    if (global.config.GOD.includes(targetID)) {
+      return api.sendMessage(getText("cannotKickGOD"), threadID, event.messageID);
     }
 
     // Get reason string
