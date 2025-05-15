@@ -14,7 +14,7 @@ module.exports.run = async function({ api, event, args }) {
     const fs = require("fs-extra");
     const request = require("request");
     const keySearch = args.join(" ");
-    if(keySearch.includes("-") == false) return api.sendMessage('Please enter in the format, example: pinterest Priyansh - 10 (it depends on you how many images you want to appear in the result)', event.threadID, event.messageID)
+    if(keySearch.includes("-") == false) return api.sendMessage('Please enter in the format, example: pinterest Jeric - 10 (it depends on you how many images you want to appear in the result)', event.threadID, event.messageID)
     const keySearchs = keySearch.substr(0, keySearch.indexOf('-'))
     const numberSearch = keySearch.split("-").pop() || 6
     const res = await axios.get(`https://api-dien.kira1011.repl.co/pinterest?search=${encodeURIComponent(keySearchs)}`);
