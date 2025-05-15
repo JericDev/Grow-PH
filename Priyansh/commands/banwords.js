@@ -149,9 +149,13 @@ module.exports.run = async function ({ api, event, args }) {
     case "unwarn":
       const userID = args[1];
       if (!userID) return api.sendMessage("❗ Provide user ID to reset warnings.", threadID, messageID);
-      banwordsData[threadID].warnings[userID] = 0;
-      saveData();
-      return api.sendMessage(`✅ Warnings reset for user ID: ${userID}`, threadID, messageID);
+      if (banwordsData[threadID].warnings[userID]) {
+        delete banwordsData[threadID].warnings[userID]; // fixed logic
+        saveData();
+        return api.sendMessage(`✅ Warnings fully cleared for user ID: ${userID}`, threadID, messageID);
+      } else {
+        return api.sendMessage(`ℹ️ User ID ${userID} has no warnings.`, threadID, messageID);
+      }
 
     default:
       return api.sendMessage("❌ Invalid action. Use add, remove, list, on, off, warn, or unwarn.", threadID, messageID);
