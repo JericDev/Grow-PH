@@ -14,10 +14,10 @@ module.exports.onLoad = function () {
     const { existsSync, mkdirSync } = global.nodemodule["fs-extra"];
     const { join } = global.nodemodule["path"];
 
-	const path = join(__dirname, "cache", "leaveGif", "randomgif");
+	const path = join(__dirname, "cache", "leaveGif", "leave.gif");
 	if (existsSync(path)) mkdirSync(path, { recursive: true });	
 
-	const path2 = join(__dirname, "cache", "leaveGif", "randomgif");
+	const path2 = join(__dirname, "cache", "leaveGif", "leave.gif");
     if (!existsSync(path2)) mkdirSync(path2, { recursive: true });
 
     return;
@@ -34,8 +34,8 @@ module.exports.run = async function({ api, event, Users, Threads }) {
 	const data = global.data.threadData.get(parseInt(threadID)) || (await Threads.getData(threadID)).data;
 	const name = global.data.userName.get(event.logMessageData.leftParticipantFbId) || await Users.getNameUser(event.logMessageData.leftParticipantFbId);
 	const type = (event.author == event.logMessageData.leftParticipantFbId) ? "leave" : "managed";
-	const path = join(__dirname, "events", "123.mp4");
-	const pathGif = join(path, `${threadID}123.mp4`);
+	const path = join(__dirname, "events", "leave.gif");
+	const pathGif = join(path, `${threadID}leave.gif`);
 	var msg, formPush
 
 	if (existsSync(path)) mkdirSync(path, { recursive: true });
