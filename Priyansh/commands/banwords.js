@@ -61,7 +61,7 @@ module.exports.handleEvent = async ({ api, event }) => {
     return api.removeUserFromGroup(senderID, threadID);
   } else {
     return api.sendMessage(
-      `⚠️ Warning ${currentWarnings}/3: Your message contains banned words.\nDetected: "${body}"`,
+      `⚠️ Warning ${currentWarnings}/3\nYour message contains banned words.\nDetected: "${body}"`,
       threadID,
       messageID
     );
@@ -80,7 +80,7 @@ module.exports.run = async function ({ api, event, args }) {
   const isGroupAdmin = adminIDs.some(ad => ad.id === senderID);
 
   if (!isGlobalAdmin && !isGroupAdmin) {
-    return api.sendMessage("⛔ Only bot or group admins can manage banned words.", threadID, messageID);
+    return api.sendMessage("⛔ Only owner or group admins can manage banned words.", threadID, messageID);
   }
 
   const action = args[0].toLowerCase();
