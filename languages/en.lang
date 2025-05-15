@@ -101,7 +101,7 @@ handleSchedule.exectuteError=Having some error when schedule at module %1, error
 
 # utils/index.js
 
-utils.throwError=⚠️ Invalid usage of "%2".\nTry: %1%2 help or check the syntax.
+utils.throwError=⚠️ Invalid usage of "%2".\nTry: %1help %2 or check the syntax.
 
 # updater.js
 
