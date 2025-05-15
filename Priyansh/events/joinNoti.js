@@ -15,7 +15,7 @@ module.exports.onLoad = function () {
     const { existsSync, mkdirSync } = global.nodemodule["fs-extra"];
     const { join } = global.nodemodule["path"];
  
-    const path = join(__dirname, "cache", "joinvideo");
+    const path = join(__dirname, "cache", "welcgif");
     if (existsSync(path)) mkdirSync(path, { recursive: true }); 
  
     const path2 = join(__dirname, "cache", "joinvideo", "randomgif");
@@ -32,7 +32,7 @@ module.exports.run = async function({ api, event }) {
         api.changeNickname(`[ ${global.config.PREFIX} ] • ${(!global.config.BOTNAME) ? " " : global.config.BOTNAME}`, threadID, api.getCurrentUserID());
         const fs = require("fs");
         return api.sendMessage("", event.threadID, () => api.sendMessage({body: `${global.config.BOTNAME} - Bot Connected.\n𝐌𝐲 𝐍𝐚𝐦𝐞 𝐈𝐬 ${global.config.BOTNAME}\nMy Prefix Is [ ${global.config.PREFIX} ]\nType ${global.config.PREFIX}help to see my cmd list\nMy Owner Is ${global.config.BOTOWNER}\nUse ${global.config.PREFIX}Callad For Any Issues:\n\n::𝐄𝐱𝐚𝐦𝐩𝐥𝐞::\n ${global.config.PREFIX}gpt ${global.config.PREFIX}ai ${global.config.PREFIX}sim\n${global.config.PREFIX}ship ${global.config.PREFIX}pair ${global.config.PREFIX}pinte\n${global.config.PREFIX}help ${global.config.PREFIX}giveaway ${global.config.PREFIX}banwords\n 
-`, attachment: fs.createReadStream(__dirname + "/cache/botjoin.mp4")} ,threadID));
+`, attachment: fs.createReadStream(__dirname + "/cache/welc.gif")} ,threadID));
     }
     else {
         try {
@@ -40,7 +40,7 @@ module.exports.run = async function({ api, event }) {
             let { threadName, participantIDs } = await api.getThreadInfo(threadID);
  
             const threadData = global.data.threadData.get(parseInt(threadID)) || {};
-            const path = join(__dirname, "cache", "joinvideo");
+            const path = join(__dirname, "cache", "welcgif");
             const pathGif = join(path, `${threadID}.video`);
  
             var mentions = [], nameArray = [], memLength = [], i = 0;
