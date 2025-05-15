@@ -8,7 +8,7 @@ module.exports.config = {
   credits: "Jonell Magallanes (Updated by OpenAI)",
   description: "Manage and enforce banned words with warning and kick system",
   commandCategory: "admin",
-  usages: "add [word] | remove [word] | list | on | off | unwarn [userID] | checkwarn [mention or UID]",
+  usages: "add [word] | remove [word] | list | on | off | unwarn [mention/userID]",
   cooldowns: 5
 };
 
