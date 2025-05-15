@@ -1,31 +1,37 @@
-const path = require("path");
-const fs = require("fs");
+const path = require('path');
+const fs = require('fs');
 
 module.exports.config = {
   name: "banwords",
-  version: "2.1.0",
+  version: "2.0.1",
   hasPermssion: 0,
-  credits: "Unified by OpenAI",
-  description: "Ban words with warning and kick system",
+  credits: "Jonell Magallanes (Updated by OpenAI)",
+  description: "Manage and enforce banned words with warning and kick system",
   commandCategory: "admin",
-  usages: "add [word] | remove [word] | list | on | off | warn [userID] | unwarn [userID] | checkwarn [userID]",
+  usages: "add [word] | remove [word] | list | on | off | unwarn [userID] | checkwarn [mention or UID]",
   cooldowns: 5
 };
 
-const dataFile = path.join(__dirname, 'banwordsData.json');
+const saveFile = path.join(__dirname, 'badwordsActive.json');
 
 let banwordsData = {};
-if (fs.existsSync(dataFile)) {
-  banwordsData = JSON.parse(fs.readFileSync(dataFile, "utf8"));
+if (fs.existsSync(saveFile)) {
+  banwordsData = JSON.parse(fs.readFileSync(saveFile, "utf8"));
 }
 
-const saveData = () => fs.writeFileSync(dataFile, JSON.stringify(banwordsData, null, 2), "utf8");
+const saveData = () => fs.writeFileSync(saveFile, JSON.stringify(banwordsData, null, 2), "utf8");
+
+const getWordFilePath = (threadID) => path.join(__dirname, `../commands/noprefix/${threadID}.json`);
+const loadBannedWords = (threadID) => {
+  const file = getWordFilePath(threadID);
+  if (!fs.existsSync(file)) return [];
+  return JSON.parse(fs.readFileSync(file, "utf8"));
+};
 
 const ensureThreadData = (threadID) => {
   if (!banwordsData[threadID]) {
     banwordsData[threadID] = {
       active: false,
-      words: [],
       warnings: {}
     };
   }
@@ -36,123 +42,113 @@ module.exports.handleEvent = async ({ api, event }) => {
   if (!body) return;
 
   ensureThreadData(threadID);
-  const thread = banwordsData[threadID];
-  if (!thread.active) return;
+  if (!banwordsData[threadID].active) return;
 
   const config = global.config || {};
-  const isAdmin = config.ADMINBOT?.includes(senderID);
+  const isGlobalAdmin = config.ADMINBOT?.includes(senderID);
+  if (isGlobalAdmin) return;
+
   const threadInfo = await api.getThreadInfo(threadID);
   const isGroupAdmin = threadInfo.adminIDs?.some(ad => ad.id === senderID);
-  if (isAdmin || isGroupAdmin) return;
+  if (isGroupAdmin) return;
 
-  const msg = body.toLowerCase();
-  const matched = thread.words.some(word => msg.includes(word.toLowerCase()));
+  const messageContent = body.toLowerCase();
+  const bannedWords = loadBannedWords(threadID);
+  const matched = bannedWords.some(word => messageContent.includes(word.toLowerCase()));
   if (!matched) return;
 
-  thread.warnings[senderID] = (thread.warnings[senderID] || 0) + 1;
-  const currentWarnings = thread.warnings[senderID];
+  const threadWarnings = banwordsData[threadID].warnings;
+  threadWarnings[senderID] = (threadWarnings[senderID] || 0) + 1;
+  const currentWarnings = threadWarnings[senderID];
   saveData();
 
   if (currentWarnings >= 3) {
-    api.sendMessage(`❌ You used banned words 3 times and will be removed.`, threadID);
-    delete thread.warnings[senderID];
+    api.sendMessage(`❌ You used banned words 3 times. You are now being removed from the group.`, threadID);
+    delete threadWarnings[senderID];
     saveData();
     return api.removeUserFromGroup(senderID, threadID);
   } else {
     return api.sendMessage(
-      `⚠️ Warning ${currentWarnings}/3\nYou used a banned word.\nDetected: "${body}"`,
+      `⚠️ Warning ${currentWarnings}/3\nYour message contains banned words.\nDetected: "${body}"`,
       threadID,
       messageID
     );
   }
 };
 
-module.exports.run = async ({ api, event, args }) => {
-  const { threadID, messageID, senderID } = event;
-  if (!args[0]) return api.sendMessage("❗ Use: add/remove/list/on/off/warn/unwarn/checkwarn", threadID, messageID);
+module.exports.run = async function ({ api, event, args }) {
+  const { threadID, messageID, senderID, mentions } = event;
+  if (!args[0]) return api.sendMessage("❗ Use: add/remove/list/on/off/unwarn/checkwarn [word/userID]", threadID, messageID);
 
   const config = global.config || {};
-  const isAdmin = config.ADMINBOT?.includes(senderID);
+  const isGlobalAdmin = config.ADMINBOT?.includes(senderID);
   const threadInfo = await api.getThreadInfo(threadID);
   const isGroupAdmin = threadInfo.adminIDs?.some(ad => ad.id === senderID);
 
-  if (!isAdmin && !isGroupAdmin) {
-    return api.sendMessage("⛔ Only bot owner or group admins can use this command.", threadID, messageID);
+  if (!isGlobalAdmin && !isGroupAdmin) {
+    return api.sendMessage("⛔ Only owner or group admins can manage banned words.", threadID, messageID);
   }
 
   const action = args[0].toLowerCase();
-  const thread = (ensureThreadData(threadID), banwordsData[threadID]);
+  const word = args.slice(1).join(" ");
+  const wordFilePath = getWordFilePath(threadID);
+  const bannedWords = loadBannedWords(threadID);
+  ensureThreadData(threadID);
 
   switch (action) {
     case "add": {
-      const word = args.slice(1).join(" ").toLowerCase();
       if (!word) return api.sendMessage("❗ Provide a word to ban.", threadID, messageID);
-      if (thread.words.includes(word)) return api.sendMessage(`⚠️ "${word}" is already banned.`, threadID, messageID);
-      thread.words.push(word);
-      saveData();
-      return api.sendMessage(`✅ "${word}" added to banned words.`, threadID, messageID);
+      const lowerWord = word.toLowerCase();
+      if (bannedWords.includes(lowerWord)) {
+        return api.sendMessage(`⚠️ "${lowerWord}" is already banned.`, threadID, messageID);
+      }
+      bannedWords.push(lowerWord);
+      fs.writeFileSync(wordFilePath, JSON.stringify(bannedWords), "utf8");
+      return api.sendMessage(`✅ "${lowerWord}" added to the banned list.`, threadID, messageID);
     }
 
     case "remove": {
-      const word = args.slice(1).join(" ").toLowerCase();
-      const index = thread.words.indexOf(word);
-      if (index === -1) return api.sendMessage(`❌ "${word}" is not in the list.`, threadID, messageID);
-      thread.words.splice(index, 1);
-      saveData();
-      return api.sendMessage(`✅ "${word}" removed.`, threadID, messageID);
+      const removeWord = word.toLowerCase();
+      const index = bannedWords.indexOf(removeWord);
+      if (index === -1) return api.sendMessage(`❌ "${removeWord}" is not in the banned list.`, threadID, messageID);
+      bannedWords.splice(index, 1);
+      fs.writeFileSync(wordFilePath, JSON.stringify(bannedWords), "utf8");
+      return api.sendMessage(`✅ "${removeWord}" removed from the banned list.`, threadID, messageID);
     }
 
     case "list": {
-      if (thread.words.length === 0) return api.sendMessage("📭 No banned words yet.", threadID, messageID);
-      return api.sendMessage(`📝 Banned Words:\n${thread.words.join(", ")}`, threadID, messageID);
+      if (bannedWords.length === 0) return api.sendMessage("📭 No banned words set.", threadID, messageID);
+      return api.sendMessage(`📝 Banned words:\n${bannedWords.join(", ")}`, threadID, messageID);
     }
 
-    case "on":
-      thread.active = true;
+    case "on": {
+      banwordsData[threadID].active = true;
       saveData();
       return api.sendMessage("✅ Banwords system activated.", threadID, messageID);
+    }
 
-    case "off":
-      thread.active = false;
+    case "off": {
+      banwordsData[threadID].active = false;
       saveData();
       return api.sendMessage("❎ Banwords system deactivated.", threadID, messageID);
-
-    case "warn": {
-      const userID = args[1];
-      if (!userID) return api.sendMessage("❗ Provide user ID to warn.", threadID, messageID);
-      thread.warnings[userID] = (thread.warnings[userID] || 0) + 1;
-      const warns = thread.warnings[userID];
-      saveData();
-
-      if (warns >= 3) {
-        api.sendMessage(`❌ User ${userID} has 3 warnings and will be removed.`, threadID);
-        delete thread.warnings[userID];
-        saveData();
-        return api.removeUserFromGroup(userID, threadID);
-      } else {
-        return api.sendMessage(`⚠️ User ${userID} now has ${warns}/3 warnings.`, threadID, messageID);
-      }
     }
 
     case "unwarn": {
-      const userID = args[1];
-      if (!userID) return api.sendMessage("❗ Provide user ID to clear warnings.", threadID, messageID);
-      if (!thread.warnings[userID]) {
-        return api.sendMessage(`ℹ️ User ${userID} has no warnings.`, threadID, messageID);
-      }
-      delete thread.warnings[userID];
+      const userID = args[1] || Object.keys(mentions)[0];
+      if (!userID) return api.sendMessage("❗ Provide user ID or mention to reset warnings.", threadID, messageID);
+      banwordsData[threadID].warnings[userID] = 0;
       saveData();
-      return api.sendMessage(`✅ Cleared all warnings for user ${userID}.`, threadID, messageID);
+      return api.sendMessage(`✅ Warnings reset for user ID: ${userID}`, threadID, messageID);
     }
 
     case "checkwarn": {
-      const userID = args[1];
-      if (!userID) return api.sendMessage("❗ Provide user ID to check.", threadID, messageID);
-      const count = thread.warnings[userID] || 0;
-      return api.sendMessage(`ℹ️ User ${userID} has ${count}/3 warnings.`, threadID, messageID);
+      const userID = args[1] || Object.keys(mentions)[0];
+      if (!userID) return api.sendMessage("❗ Provide user ID or mention to check warnings.", threadID, messageID);
+      const warns = banwordsData[threadID].warnings[userID] || 0;
+      return api.sendMessage(`⚠️ User ID: ${userID} has ${warns}/3 warnings.`, threadID, messageID);
     }
 
     default:
-      return api.sendMessage("❌ Invalid action. Use add/remove/list/on/off/warn/unwarn/checkwarn", threadID, messageID);
+      return api.sendMessage("❌ Invalid action. Use add, remove, list, on, off, unwarn, or checkwarn.", threadID, messageID);
   }
 };
