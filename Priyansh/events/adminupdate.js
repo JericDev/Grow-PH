@@ -25,7 +25,7 @@ module.exports.run = async function ({ event, api, Threads,Users }) {
             case "log:thread-admins": {
                 if (logMessageData.ADMIN_EVENT == "add_admin") {
                     dataThread.adminIDs.push({ id: logMessageData.TARGET_ID })
-                    if (global.configModule[this.config.name].sendNoti) api.sendMessage(`»» NOTICE «« Update user ${logMessageData.TARGET_ID} Mil Gya Admin Tujhe Ja Khus Hoja 😸`, threadID, async (error, info) => {
+                    if (global.configModule[this.config.name].sendNoti) api.sendMessage(`[ GROUP UPDATE ]\n❯ USER UPDATE ${logMessageData.TARGET_ID} Became a group admin`, threadID, async (error, info) => {
                         if (global.configModule[this.config.name].autoUnsend) {
                             await new Promise(resolve => setTimeout(resolve, global.configModule[this.config.name].timeToUnsend * 1000));
                             return api.unsendMessage(info.messageID);
