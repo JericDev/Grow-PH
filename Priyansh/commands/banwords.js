@@ -1,7 +1,7 @@
 module.exports.config = {
   name: "banwords",
   version: "1.0.0",
-  hasPermission: 2, // Admin permissions
+  hasPermission: 2, // Admin permissions (only for metadata)
   credits: "Jonell Magallanes (Edited by OpenAI)",
   description: "Manage and enforce banned words with warning and kick system",
   commandCategory: "admin",
@@ -47,7 +47,7 @@ module.exports.handleEvent = async ({ api, event }) => {
   if (!matched) return;
 
   const threadInfo = await api.getThreadInfo(threadID);
-  if (!threadInfo.adminIDs.some(admin => admin.id === api.getCurrentUserID())) return;
+  if (!threadInfo.adminIDs.some(admin => admin.id === api.getCurrentUserID())) return; // Ensure bot is admin
 
   // Init warning tracking per thread
   warnings[threadID] = warnings[threadID] || {};
@@ -68,13 +68,14 @@ module.exports.handleEvent = async ({ api, event }) => {
 };
 
 module.exports.run = async function({ api, event, args }) {
-  const { threadID, messageID } = event;
+  const { threadID, messageID, senderID } = event;
+
   if (!args[0]) {
     return api.sendMessage("❗ Please use: add/remove/list/on/off/unwarn [word/userID]", threadID, messageID);
   }
 
   const threadInfo = await api.getThreadInfo(threadID);
-  const isAdmin = threadInfo.adminIDs.some(ad => ad.id === api.getCurrentUserID());
+  const isAdmin = threadInfo.adminIDs.some(ad => ad.id === senderID); // ✅ Check if sender is admin
   if (!isAdmin) {
     return api.sendMessage("🛡️ Only admins can manage banned words.", threadID, messageID);
   }
