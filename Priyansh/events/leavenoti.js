@@ -2,8 +2,8 @@ module.exports.config = {
 	name: "leave",
 	eventType: ["log:unsubscribe"],
 	version: "1.0.0",
-	credits: "𝙋𝙧𝙞𝙮𝙖𝙣𝙨𝙝 𝙍𝙖𝙟𝙥𝙪𝙩",
-	description: "Notify the Bot or the person leaving the group with a random gif/photo/video",
+	credits: "𝙋𝙧𝙞𝙮𝙖𝙣𝙨𝙝 𝙍𝙖𝙟𝙥𝙪𝙩 (Modified by ChatGPT)",
+	description: "Send a leave message when someone leaves the group",
 	dependencies: {
 		"fs-extra": "",
 		"path": ""
@@ -14,45 +14,34 @@ module.exports.onLoad = function () {
     const { existsSync, mkdirSync } = global.nodemodule["fs-extra"];
     const { join } = global.nodemodule["path"];
 
-	const path = join(__dirname, "cache", "leaveGif", "leave.gif");
-	if (existsSync(path)) mkdirSync(path, { recursive: true });	
-
-	const path2 = join(__dirname, "cache", "leaveGif", "leave.gif");
-    if (!existsSync(path2)) mkdirSync(path2, { recursive: true });
-
-    return;
-}
+    const leaveDir = join(__dirname, "cache", "leaveGif");
+    if (!existsSync(leaveDir)) mkdirSync(leaveDir, { recursive: true });
+};
 
 module.exports.run = async function({ api, event, Users, Threads }) {
 	if (event.logMessageData.leftParticipantFbId == api.getCurrentUserID()) return;
-	const { createReadStream, existsSync, mkdirSync, readdirSync } = global.nodemodule["fs-extra"];
-	const { join } =  global.nodemodule["path"];
+
+	const { createReadStream, existsSync, readdirSync } = global.nodemodule["fs-extra"];
+	const { join } = global.nodemodule["path"];
 	const { threadID } = event;
-  const moment = require("moment-timezone");
-  const time = moment.tz("Asia/Kolkata").format("DD/MM/YYYY || HH:mm:s");
-  const hours = moment.tz("Asia/Kolkata").format("HH");
-	const data = global.data.threadData.get(parseInt(threadID)) || (await Threads.getData(threadID)).data;
+
 	const name = global.data.userName.get(event.logMessageData.leftParticipantFbId) || await Users.getNameUser(event.logMessageData.leftParticipantFbId);
-	const type = (event.author == event.logMessageData.leftParticipantFbId) ? "leave" : "managed";
-	const path = join(__dirname, "events", "leave.gif");
-	const pathGif = join(path, `${threadID}leave.gif`);
-	var msg, formPush
+	const data = global.data.threadData.get(parseInt(threadID)) || (await Threads.getData(threadID)).data;
 
-	if (existsSync(path)) mkdirSync(path, { recursive: true });
+	const msg = (typeof data.customLeave == "undefined")
+		? `Uy may nangiwan!\n\n${name}\nReason: Left the group\nOK lang! ganyan naman kayo,\nsanay na kaming iniiwanan!`
+		: data.customLeave.replace(/\{name}/g, name);
 
-(typeof data.customLeave == "undefined") ? msg = "Uy may nangiwan!\n {name}\nReason:Left the group\nOK lang! Ganyan naman kayo, sanay na kaming iniiwanan!" : msg = data.customLeave;
-	msg = msg.replace(/\{name}/g, name).replace(/\{type}/g, type).replace(/\{session}/g, hours <= 10 ? "𝙈𝙤𝙧𝙣𝙞𝙣𝙜" : 
-    hours > 10 && hours <= 12 ? "𝘼𝙛𝙩𝙚𝙧𝙉𝙤𝙤𝙣" :
-    hours > 12 && hours <= 18 ? "𝙀𝙫𝙚𝙣𝙞𝙣𝙜" : "𝙉𝙞𝙜𝙝𝙩").replace(/\{time}/g, time);  
+	const leaveDir = join(__dirname, "cache", "leaveGif");
+	const files = existsSync(leaveDir) ? readdirSync(leaveDir) : [];
 
-	const randomPath = readdirSync(join(__dirname, "cache", "leaveGif"));
-
-	if (existsSync(pathGif)) formPush = { body: msg, attachment: createReadStream(pathGif) }
-	else if (randomPath.length != 0) {
-		const pathRandom = join(__dirname, "cache", "leaveGif",`${randomPath[Math.floor(Math.random() * randomPath.length)]}`);
-		formPush = { body: msg, attachment: createReadStream(pathRandom) }
+	let formPush;
+	if (files.length > 0) {
+		const randomFile = join(leaveDir, files[Math.floor(Math.random() * files.length)]);
+		formPush = { body: msg, attachment: createReadStream(randomFile) };
+	} else {
+		formPush = { body: msg };
 	}
-	else formPush = { body: msg }
-	
+
 	return api.sendMessage(formPush, threadID);
-                            }
+};
