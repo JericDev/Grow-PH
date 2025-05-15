@@ -20,7 +20,7 @@ const messages = [
     { time: '12:00 PM', message: 'Good afternoon guys 🌅' },
     { time: '1:00 PM', message: 'nag lunch kana? tinatanong kita baka kasi walang nagtatanong ng ganan sayo 😢' },
     { time: '3:00 PM', message: 'meryenda na aba 🍔' },
-    { time: '6:00 PM', message: 'Good evening guys, kamusta ka?' },
+    { time: '6:00 PM', message: 'Good evening guys, kamusta kayo?' },
     { time: '8:00 PM', message: 'nag dinner kana po ba love?' },
     { time: '9:00 PM', message: 'Goodevening humans, its already evening time, have you all eaten? 🤔' },
     { time: '10:00 PM', message: 'Goodnight guys, have a sweet dreams😴😴' },
