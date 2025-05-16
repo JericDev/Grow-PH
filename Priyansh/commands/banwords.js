@@ -134,17 +134,19 @@ module.exports.run = async function ({ api, event, args }) {
     }
 
     case "unwarn": {
-      const userID = args[1] || Object.keys(mentions)[0];
+      const mentionID = Object.keys(mentions)[0];
+      const inputID = args[1] && args[1].replace(/[<@!>]/g, "");
+      const userID = mentionID || inputID;
+
       if (!userID) return api.sendMessage("❗ Provide a user ID or mention to reset warnings.", threadID, messageID);
 
-      ensureThreadData(threadID);
       const threadWarnings = banwordsData[threadID].warnings;
 
       if (!threadWarnings[userID]) {
         return api.sendMessage(`⚠️ User <${userID}> has no warnings to remove.`, threadID, messageID);
       }
 
-      delete threadWarnings[userID]; // Remove warning entry
+      delete threadWarnings[userID];
       saveData();
       return api.sendMessage(`✅ Warnings removed for user <${userID}>.`, threadID, messageID);
     }
