@@ -141,12 +141,12 @@ module.exports.run = async function ({ api, event, args }) {
       const threadWarnings = banwordsData[threadID].warnings;
 
       if (!threadWarnings[userID]) {
-        return api.sendMessage(`⚠️ User <@${userID}> has no warnings to remove.`, threadID, messageID);
+        return api.sendMessage(`⚠️ User <${userID}> has no warnings to remove.`, threadID, messageID);
       }
 
       delete threadWarnings[userID]; // Remove warning entry
       saveData();
-      return api.sendMessage(`✅ Warnings removed for user <@${userID}>.`, threadID, messageID);
+      return api.sendMessage(`✅ Warnings removed for user <${userID}>.`, threadID, messageID);
     }
 
     default:
