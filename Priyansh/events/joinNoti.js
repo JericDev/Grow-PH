@@ -26,52 +26,58 @@ module.exports.onLoad = function () {
  
  
 module.exports.run = async function({ api, event }) {
-    const { join } = global.nodemodule["path"];
     const { threadID } = event;
+
+    // Ignore welcome message when the bot itself joins
     if (event.logMessageData.addedParticipants.some(i => i.userFbId == api.getCurrentUserID())) {
-        api.changeNickname(`[ ${global.config.PREFIX} ] • ${(!global.config.BOTNAME) ? " " : global.config.BOTNAME}`, threadID, api.getCurrentUserID());
-        const fs = require("fs");
-        return api.sendMessage("", event.threadID, () => api.sendMessage({body: `${global.config.BOTNAME} - Bot Connected.\n𝐌𝐲 𝐍𝐚𝐦𝐞 𝐈𝐬 ${global.config.BOTNAME}\nMy Prefix Is [ ${global.config.PREFIX} ]\nType ${global.config.PREFIX}help to see my cmd list\nMy Owner Is ${global.config.BOTOWNER}\nUse ${global.config.PREFIX}Callad For Any Issues:\n\n::𝐄𝐱𝐚𝐦𝐩𝐥𝐞::\n ${global.config.PREFIX}gpt ${global.config.PREFIX}ai ${global.config.PREFIX}sim\n${global.config.PREFIX}ship ${global.config.PREFIX}pair ${global.config.PREFIX}pinte\n${global.config.PREFIX}help ${global.config.PREFIX}giveaway ${global.config.PREFIX}banwords\n 
-`, attachment: fs.createReadStream(__dirname + "/cache/welc.gif")} ,threadID));
+        return;
     }
-    else {
-        try {
-            const { createReadStream, existsSync, mkdirSync, readdirSync } = global.nodemodule["fs-extra"];
-            let { threadName, participantIDs } = await api.getThreadInfo(threadID);
- 
-            const threadData = global.data.threadData.get(parseInt(threadID)) || {};
-            const path = join(__dirname, "cache", "welcgif");
-            const pathGif = join(path, `${threadID}.video`);
- 
-            var mentions = [], nameArray = [], memLength = [], i = 0;
-            
-            for (id in event.logMessageData.addedParticipants) {
-                const userName = event.logMessageData.addedParticipants[id].fullName;
-                nameArray.push(userName);
-                mentions.push({ tag: userName, id });
-                memLength.push(participantIDs.length - i++);
-            }
-            memLength.sort((a, b) => a - b);
-            
-            (typeof threadData.customJoin == "undefined") ? msg = "Hi, {name}.\nWelcome to {threadName}. You're The\n{soThanhVien}th member of this group, please enjoy!🥳❤️" : msg = threadData.customJoin;
-            msg = msg
+
+    const { join } = require("path");
+    const fs = require("fs-extra");
+    const request = require("request");
+    const { rand } = require("./join.js"); // Get random image from join.js
+
+    try {
+        const { threadName, participantIDs } = await api.getThreadInfo(threadID);
+        const threadData = global.data.threadData.get(parseInt(threadID)) || {};
+
+        let mentions = [], nameArray = [], memLength = [], i = 0;
+        
+        for (let user of event.logMessageData.addedParticipants) {
+            const userName = user.fullName;
+            nameArray.push(userName);
+            mentions.push({ tag: userName, id: user.userFbId });
+            memLength.push(participantIDs.length - i++);
+        }
+
+        memLength.sort((a, b) => a - b);
+
+        let msg = (typeof threadData.customJoin == "undefined")
+            ? "Hi, {name}.\nWelcome to {threadName}. You're the {soThanhVien}th member of this group, please enjoy! 🥳❤️"
+            : threadData.customJoin;
+
+        msg = msg
             .replace(/\{name}/g, nameArray.join(', '))
-            .replace(/\{type}/g, (memLength.length > 1) ?  'Friends' : 'Friend')
+            .replace(/\{type}/g, (memLength.length > 1) ? 'Friends' : 'Friend')
             .replace(/\{soThanhVien}/g, memLength.join(', '))
             .replace(/\{threadName}/g, threadName);
- 
-            if (existsSync(path)) mkdirSync(path, { recursive: true });
- 
-            const randomPath = readdirSync(join(__dirname, "cache", "joinGif", "randomgif"));
- 
-            if (existsSync(pathGif)) formPush = { body: msg, attachment: createReadStream(pathvideo), mentions }
-            else if (randomPath.length != 0) {
-                const pathRandom = join(__dirname, "cache", "joinGif", "randomgif", `${randomPath[Math.floor(Math.random() * randomPath.length)]}`);
-                formPush = { body: msg, attachment: createReadStream(pathRandom), mentions }
-            }
-            else formPush = { body: msg, mentions }
- 
-            return api.sendMessage(formPush, threadID);
-        } catch (e) { return console.log(e) };
+
+        // Download image from URL
+        const imagePath = join(__dirname, "cache", `welcome.jpg`);
+        request(rand).pipe(fs.createWriteStream(imagePath)).on("close", () => {
+            const formPush = {
+                body: msg,
+                attachment: fs.createReadStream(imagePath),
+                mentions
+            };
+
+            api.sendMessage(formPush, threadID, () => {
+                if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+            });
+        });
+
+    } catch (e) {
+        console.log("JOIN NOTI ERROR:", e);
     }
-              }
+};
