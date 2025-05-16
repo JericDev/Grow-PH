@@ -18,7 +18,7 @@ module.exports.onLoad = function () {
     const path = join(__dirname, "cache", "welcgif");
     if (existsSync(path)) mkdirSync(path, { recursive: true }); 
  
-    const path2 = join(__dirname, "cache", "joinvideo", "randomgif");
+    const path2 = join(__dirname, "cache", "joinGif", "randomgif");
     if (!existsSync(path2)) mkdirSync(path2, { recursive: true });
  
     return;
@@ -62,11 +62,11 @@ module.exports.run = async function({ api, event }) {
  
             if (existsSync(path)) mkdirSync(path, { recursive: true });
  
-            const randomPath = readdirSync(join(__dirname, "cache", "join.js"));
+            const randomPath = readdirSync(join(__dirname, "cache", "joinGif", "randomgif"));
  
             if (existsSync(pathGif)) formPush = { body: msg, attachment: createReadStream(pathvideo), mentions }
             else if (randomPath.length != 0) {
-                const pathRandom = join(__dirname, "cache", "join.js"`${randomPath[Math.floor(Math.random() * randomPath.length)]}`);
+                const pathRandom = join(__dirname, "cache", "joinGif", "randomgif"`${randomPath[Math.floor(Math.random() * randomPath.length)]}`);
                 formPush = { body: msg, attachment: createReadStream(pathRandom), mentions }
             }
             else formPush = { body: msg, mentions }
