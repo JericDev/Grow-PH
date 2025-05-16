@@ -4,7 +4,7 @@ const fs = require('fs');
 module.exports.config = {
   name: "banwords",
   version: "2.0.2",
-  hasPermssion: 0,
+  hasPermssion: 2,
   credits: "Jonell Magallanes (Updated by OpenAI)",
   description: "Manage and enforce banned words with warning and kick system",
   commandCategory: "admin",
