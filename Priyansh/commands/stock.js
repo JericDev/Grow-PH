@@ -1,46 +1,47 @@
+const fs = require('fs');
+const path = require('path');
+const puppeteer = require('puppeteer');
+
 module.exports.config = {
-    name: "stock",
-    version: "1.0.0",
-    hasPermission: 0,
-    credits: "ChatGPT",
-    description: "Shows stock of seeds, gears, and eggs",
-    commandCategory: "random-img",
-    usages: "stock",
-    cooldowns: 5,
-    dependencies: {
-        "axios": ""
-    }
+  name: "stock",
+  version: "1.0.0",
+  hasPermssion: 0,
+  credits: "YourName",
+  description: "Show real-time stock from Grow-A-Garden",
+  commandCategory: "tools",
+  usages: "",
+  cooldowns: 10
 };
 
 module.exports.run = async ({ api, event }) => {
-    const axios = global.nodemodule["axios"];
+  const filePath = path.join(__dirname, 'stock.png');
 
+  api.sendMessage("📸 Fetching real-time stock data, please wait...", event.threadID, async () => {
     try {
-        const res = await axios.get('https://vulcanvalues.com/grow-a-garden/stock');
-        const stockData = res.data;
+      const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+      const page = await browser.newPage();
+      await page.goto("https://vulcanvalues.com/grow-a-garden/stock", { waitUntil: "networkidle2" });
 
-        if (!stockData.stock || !Array.isArray(stockData.stock)) {
-            return api.sendMessage("Failed to retrieve valid stock data.", event.threadID, event.messageID);
-        }
+      // Optionally hide cookie popup
+      await page.evaluate(() => {
+        const cookiePopup = document.querySelector(".CookieConsent");
+        if (cookiePopup) cookiePopup.style.display = 'none';
+      });
 
-        // Filter only seeds, gears, and eggs
-        const filteredItems = stockData.stock.filter(item =>
-            ["seeds", "gears", "eggs"].includes(item.item.toLowerCase())
-        );
+      // Take screenshot
+      const stockSection = await page.$("body");
+      await stockSection.screenshot({ path: filePath });
 
-        if (filteredItems.length === 0) {
-            return api.sendMessage("No seeds, gears, or eggs stock info found.", event.threadID, event.messageID);
-        }
+      await browser.close();
 
-        // Format the message
-        let message = '🌱 Stock Info (Seeds, Gears, Eggs):\n';
-        filteredItems.forEach(item => {
-            message += `• ${item.item}: ${item.amount}\n`;
-        });
-
-        return api.sendMessage(message, event.threadID, event.messageID);
-
+      api.sendMessage({
+        body: "🌱 Grow-A-Garden Live Stock:",
+        attachment: fs.createReadStream(filePath)
+      }, event.threadID, () => fs.unlinkSync(filePath)); // Delete after sending
     } catch (error) {
-        return api.sendMessage(`Error fetching stock data: ${error.message}`, event.threadID, event.messageID);
+      console.error(error);
+      api.sendMessage("❌ Failed to fetch stock data.", event.threadID);
     }
+  });
 };
+
