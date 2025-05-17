@@ -24,11 +24,9 @@ module.exports.run = async({ api, event, args, client, Users, Threads, __GLOBAL,
 ⚠️ Respect all Members.
 ⚠️ Always use Midman/Middlewoman.
 ⚠️ Be friendly and avoid toxic behavior.
-⚠️ Sending multiple photos or videos is not allowed.
-⚠️ Swearing is not allowed.
-⚠️ Scamming is not allowed.
-⚠️ Spamming is not allowed.
 ⚠️ Sending Links is not allowed.
+⚠️ Spamming is not allowed.
+⚠️ GAG Related only.
     
 Failure to follow the rules may result in a warning, kick or ban.!`;
 
