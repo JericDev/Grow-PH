@@ -1,35 +1,10 @@
-module.exports.config = {
-    name: "joinNoti",
-    eventType: ["log:subscribe"],
-    version: "1.0.1",
-    credits: "𝙋𝙧𝙞𝙮𝙖𝙣𝙨𝙝 𝙍𝙖𝙟𝙥𝙪𝙩",
-    description: "Notification of bots or people entering groups with random gif/photo/video",
-    dependencies: {
-        "fs-extra": "",
-        "path": "",
-        "pidusage": ""
-    }
-};
-
-module.exports.onLoad = function () {
-    const { existsSync, mkdirSync } = global.nodemodule["fs-extra"];
-    const { join } = global.nodemodule["path"];
-
-    const path = join(__dirname, "cache", "welcgif");
-    if (!existsSync(path)) mkdirSync(path, { recursive: true }); 
-
-    const path2 = join(__dirname, "cache", "joinGif", "randomgif");
-    if (!existsSync(path2)) mkdirSync(path2, { recursive: true });
-
-    return;
-};
-
 module.exports.run = async function({ api, event }) {
+    const { createReadStream } = global.nodemodule["fs-extra"];
     const { join } = global.nodemodule["path"];
     const fs = require("fs");
-    const { threadID } = event;
+    const threadID = event.threadID;
 
-    // Bot joined group
+    // Bot joined group (keep this as is)
     if (event.logMessageData.addedParticipants.some(i => i.userFbId == api.getCurrentUserID())) {
         api.changeNickname(`[ ${global.config.PREFIX} ] • ${global.config.BOTNAME || ""}`, threadID, api.getCurrentUserID());
         return api.sendMessage("", threadID, () => 
@@ -42,7 +17,6 @@ module.exports.run = async function({ api, event }) {
 
     // New user joined
     try {
-        const { createReadStream, existsSync, readdirSync } = global.nodemodule["fs-extra"];
         let { threadName, participantIDs } = await api.getThreadInfo(threadID);
         const threadData = global.data.threadData.get(parseInt(threadID)) || {};
 
@@ -62,18 +36,18 @@ module.exports.run = async function({ api, event }) {
             .replace(/\{soThanhVien}/g, memLength.join(', '))
             .replace(/\{threadName}/g, threadName);
 
-        const randomGifDir = join(__dirname, "cache", "joinGif", "randomgif");
-        const randomFiles = readdirSync(randomGifDir);
-        const hasFiles = randomFiles.length > 0;
+        // Use your join.js image URL here:
+        const imageUrl = "https://i.imgur.com/QmlY12B.jpeg";  // note: direct image link, not imgur page link
 
-        const formPush = {
+        // Send message with image URL attachment
+        return api.sendMessage({
             body: msg,
             mentions,
-            ...(hasFiles ? { attachment: createReadStream(join(randomGifDir, randomFiles[Math.floor(Math.random() * randomFiles.length)])) } : {})
-        };
+            attachment: await global.utils.getStreamFromURL(imageUrl)
+        }, threadID);
 
-        return api.sendMessage(formPush, threadID);
     } catch (err) {
         console.log("joinNoti error:", err);
     }
 };
+
