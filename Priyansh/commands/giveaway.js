@@ -34,9 +34,11 @@ module.exports.handleReaction = async ({ api, event, Users, handleReaction }) =>
 module.exports.run = async ({ api, event, args, Users }) => {
   // Admin only check:
   const senderID = event.senderID;
-  if (!global.config.ADMINBOT.includes(senderID)) {
-    return api.sendMessage("You must be an admin to use this command.", event.threadID, event.messageID);
-  }
+  if (!global.config.ADMINBOT.includes(senderID) &&
+     (!global.config.GIVEAWAYVIP || !global.config.GIVEAWAYVIP.includes(senderID))
+) {
+  return api.sendMessage("You don't have permission to use the giveaway command.", event.threadID, event.messageID);
+}
 
   if (!global.data.GiveAway) global.data.GiveAway = new Map();
   const threadID = event.threadID;
