@@ -1,7 +1,7 @@
 module.exports.config = {
   name: "giveaway",
   version: "0.0.1",
-  hasPermssion: 2,  // keep 2 to show admin-only in help
+  hasPermssion: 0,  // keep 2 to show admin-only in help
   credits: "Jeric",
   description: "Simple giveaway system",
   commandCategory: "other",
