@@ -41,7 +41,8 @@ module.exports.run = async function({ api, event, args, getText, Threads, Users 
       return api.sendMessage(getText("notAdminBot"), threadID, event.messageID);
     }
 
-    const dataThread = (await Threads.getData(threadID)).threadInfo;
+    const threadData = await Threads.getData(threadID);
+    const dataThread = threadData.threadInfo;
     const botID = api.getCurrentUserID();
 
     if (!dataThread.adminIDs.some(item => item.id == botID)) {
@@ -53,10 +54,12 @@ module.exports.run = async function({ api, event, args, getText, Threads, Users 
 
     if (mentionIDs.length > 0) {
       targetID = mentionIDs[0];
-      args.shift();
+      const fullName = event.mentions[targetID];
+      const nameWords = fullName.trim().split(/\s+/);
+      args.splice(0, nameWords.length); // Remove all words of the mention name
     } else if (args[0]) {
       targetID = args[0];
-      args.shift();
+      args.shift(); // Remove UID from args
     } else {
       return api.sendMessage(getText("missingUser"), threadID, event.messageID);
     }
@@ -69,18 +72,13 @@ module.exports.run = async function({ api, event, args, getText, Threads, Users 
       return api.sendMessage(getText("cannotKickGOD"), threadID, event.messageID);
     }
 
-    // Get user info
     const targetInfo = await Users.getInfo(targetID);
     const targetName = targetInfo.name || targetID;
 
-    // Clean up reason by removing target name or UID at the start
     let reason = args.join(" ").trim();
-    const regex = new RegExp(`^(${targetName}|${targetID})\\s*`, 'i');
-    reason = reason.replace(regex, '').trim();
-
     if (!reason) return api.sendMessage(getText("missingReason"), threadID, event.messageID);
 
-    // Kick user
+    // Kick the user
     await api.removeUserFromGroup(targetID, threadID);
 
     const senderInfo = await Users.getInfo(senderID);
@@ -94,13 +92,12 @@ module.exports.run = async function({ api, event, args, getText, Threads, Users 
 
     // Log to GODs
     const groupName = dataThread.threadName || "Unknown";
-
-    const logMessage = 
-    `🚨 User kicked 🚨\n` +
-    `👤 Kicked user: ${targetName} (${targetID})\n` +
-    `👮 Kicked by: ${senderName} (${senderID})\n` +
-    `🧾 Reason: ${reason}\n` +
-    `💬 Group: ${groupName} (${threadID})`;
+    const logMessage =
+      `🚨 User kicked 🚨\n` +
+      `👤 Kicked user: ${targetName} (${targetID})\n` +
+      `👮 Kicked by: ${senderName} (${senderID})\n` +
+      `🧾 Reason: ${reason}\n` +
+      `💬 Group: ${groupName} (${threadID})`;
 
     const logRecipients = global.config.GOD || [];
     for (const uid of logRecipients) {
@@ -112,4 +109,3 @@ module.exports.run = async function({ api, event, args, getText, Threads, Users 
     return api.sendMessage(getText("error"), threadID, event.messageID);
   }
 };
-
