@@ -1,51 +1,53 @@
-const axios = require('axios');
-const path = require('path');
-const fs = require('fs-extra');
-
+const axios = require("axios");
+const fs = require("fs");
+const request = require("request");
 
 module.exports.config = {
-    name: "shoti",
-    version: "1.0.0",
-    permission: 0,
-    description: "random video from Shoti API By Lib API",
-    prefix: false,
-    premium: false,
-    credits: "Jonell Magallanes",
-    cooldowns: 10,
-    category: "media"
+  name: "shoti",
+  version: "1.0.0",
+  credits: "Kaiz API - fixed by ChatGPT",
+  description: "Generate random TikTok girl videos",
+  hasPermssion: 0,
+  commandCategory: "media",
+  usages: "[shoti]",
+  cooldowns: 20,
+  usePrefix: true
 };
 
 module.exports.run = async function ({ api, event }) {
-    try {
-        const response = await axios.get('https://kaiz-apis.gleeze.com/api/shoti');
-        const data = response.data.shoti;
-        const fileName = `${event.messageID}.mp4`;
-        const filePath = path.join(__dirname, fileName);
-        
-            const { videoUrl, title, username, nickname, region } = data;
+  try {
+    const apiUrl = "https://kaiz-apis.gleeze.com/api/shoti?apikey=655df2da-1084-49be-8f1b-a672bb3548c5";
+    const { data } = await axios.get(apiUrl);
 
-            const downloadResponse = await axios({
-            method: 'GET',
-            url: videoUrl,
-            responseType: 'stream',
-        });
-        const writer = fs.createWriteStream(filePath);
-        downloadResponse.data.pipe(writer);
-        writer.on('finish', async () => {
-            api.sendMessage({
-                body: `title : ${title}\nusername : ${username}\nnickname: ${nickname}\nregion : ${region}\n`,
-                attachment: fs.createReadStream(filePath)
-            }, event.threadID, () => {
-                fs.unlinkSync(filePath);
-            }, event.messageID);
-        });
-        writer.on('error', () => {
-            api.sendMessage('There was an error downloading the file. Please try again later.', event.threadID, event.messageID);
-        })
-        
-
-    } catch (error) {
-        console.error('Error fetching video:', error);
-        api.sendMessage(error.message, event.threadID, event.messageID);
+    if (!data || !data.data || !data.data.url) {
+      return api.sendMessage("❌ Failed to fetch video. Please try again later.", event.threadID, event.messageID);
     }
+
+    const videoUrl = data.data.url;
+    const username = data.data.user?.username || "Unknown";
+
+    const path = __dirname + "/cache/shoti.mp4";
+    const file = fs.createWriteStream(path);
+
+    request(videoUrl)
+      .pipe(file)
+      .on("finish", () => {
+        api.sendMessage(
+          {
+            body: `🎥 TikTok by @${username}`,
+            attachment: fs.createReadStream(path)
+          },
+          event.threadID,
+          () => fs.unlinkSync(path), // delete file after sending
+          event.messageID
+        );
+      })
+      .on("error", (err) => {
+        console.error(err);
+        api.sendMessage("❌ Error downloading video.", event.threadID, event.messageID);
+      });
+  } catch (error) {
+    console.error(error);
+    return api.sendMessage("❌ An error occurred while fetching video.", event.threadID, event.messageID);
+  }
 };
