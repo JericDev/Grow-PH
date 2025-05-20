@@ -20,15 +20,14 @@ module.exports.run = async function ({ api, event }) {
     const { data } = await axios.get(apiUrl);
 
     if (!data || !data.data || !data.data.url) {
-      return api.sendMessage("❌ Failed to fetch video. Please try again later.", event.threadID, event.messageID);
+      return api.sendMessage("❌ Failed to fetch video.", event.threadID, event.messageID);
     }
 
     const videoUrl = data.data.url;
     const username = data.data.user?.username || "Unknown";
-
     const path = __dirname + "/cache/shoti.mp4";
-    const file = fs.createWriteStream(path);
 
+    const file = fs.createWriteStream(path);
     request(videoUrl)
       .pipe(file)
       .on("finish", () => {
@@ -38,16 +37,15 @@ module.exports.run = async function ({ api, event }) {
             attachment: fs.createReadStream(path)
           },
           event.threadID,
-          () => fs.unlinkSync(path), // delete file after sending
+          () => fs.unlinkSync(path),
           event.messageID
         );
       })
       .on("error", (err) => {
-        console.error(err);
         api.sendMessage("❌ Error downloading video.", event.threadID, event.messageID);
       });
   } catch (error) {
     console.error(error);
-    return api.sendMessage("❌ An error occurred while fetching video.", event.threadID, event.messageID);
+    return api.sendMessage("❌ An error occurred.", event.threadID, event.messageID);
   }
 };
