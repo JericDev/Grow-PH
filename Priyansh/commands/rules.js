@@ -4,7 +4,7 @@ module.exports.config = {
     hasPermission: 0,
     credits: "Zia_Rein",
     description: "important notes",
-    commandCategory: "random-img",
+    commandCategory: "guide",
     usages: "send message",
     cooldowns: 5,
     dependencies: {
@@ -14,12 +14,12 @@ module.exports.config = {
     }
 };
 
-module.exports.run = async({ api, event, args, client, Users, Threads, __GLOBAL, Currencies }) => {
+module.exports.run = async ({ api, event, args }) => {
     const axios = global.nodemodule["axios"];
     const request = global.nodemodule["request"];
     const fs = global.nodemodule["fs-extra"];
-    
-    var ZiaRein3 = `𝙂𝘼𝙂 𝙏𝘼𝙈𝘽𝘼𝙔𝘼𝙉 𝙍𝙐𝙇𝙀𝙎🌶️
+
+    const rulesText = `𝙂𝘼𝙂 𝙏𝘼𝙈𝘽𝘼𝙔𝘼𝙉 𝙍𝙐𝙇𝙀𝙎🌶️
 ⚠️ Respect the Admins.
 ⚠️ Respect all Members.
 ⚠️ Always use Midman/Middlewoman.
@@ -27,10 +27,11 @@ module.exports.run = async({ api, event, args, client, Users, Threads, __GLOBAL,
 ⚠️ Sending Links is not allowed.
 ⚠️ Spamming is not allowed.
 ⚠️ GAG Related only.
-    
+⚠️ No Promoting links other gc/groups.
+
 Failure to follow the rules may result in a warning, kick or ban.!`;
 
-    var ZiaRein = [
+    const imageURLs = [
         "https://i.imgur.com/huumLca.jpg",
         "https://i.imgur.com/EcryTGh.jpg",
         "https://i.imgur.com/tu12HrQ.jpg",
@@ -38,17 +39,32 @@ Failure to follow the rules may result in a warning, kick or ban.!`;
         "https://i.imgur.com/NcbC8Pn.jpg",
     ];
 
-    var ZiaRein2 = () => {
+    const randomImageURL = imageURLs[Math.floor(Math.random() * imageURLs.length)];
+    const cachePath = __dirname + "/cache/ZiaRein1.jpg";
+
+    // Function to send the message after downloading the image
+    const sendRulesMessage = () => {
         api.sendMessage({
-            body: ZiaRein3,
-            attachment: fs.createReadStream(__dirname + "/cache/ZiaRein1.jpg")
+            body: rulesText,
+            attachment: fs.createReadStream(cachePath)
         }, event.threadID, () => {
-            fs.unlinkSync(__dirname + "/cache/ZiaRein1.jpg"); // Delete file after sending message
+            // Delete cached image after sending
+            fs.unlinkSync(cachePath);
         }, event.messageID);
     };
 
-    // Download the image and save it to the cache
-    return request(encodeURI(ZiaRein[Math.floor(Math.random() * ZiaRein.length)]))
-        .pipe(fs.createWriteStream(__dirname + "/cache/ZiaRein1.jpg"))
-        .on("close", () => ZiaRein2()); // After image is downloaded, send the message
+    try {
+        // Download image and save to cache
+        await new Promise((resolve, reject) => {
+            request(encodeURI(randomImageURL))
+                .pipe(fs.createWriteStream(cachePath))
+                .on("close", resolve)
+                .on("error", reject);
+        });
+
+        sendRulesMessage();
+    } catch (error) {
+        console.error("❌ Failed to send rules:", error);
+        return api.sendMessage("❌ Failed to load or send the rules. Try again later.", event.threadID, event.messageID);
+    }
 };
