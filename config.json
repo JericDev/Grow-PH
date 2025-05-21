@@ -51,7 +51,7 @@
     "AutoGreet": "disable",
     "AutoGreetWithSticker": "disable",
     "AutoGreetSendPerHour": "1",
-    "AutoPost": "disable",
+    "AutoPost": "enable",
     "AutoPostText": "𝐎𝐖𝐍𝐄𝐑: Jeric",
     "AutoPostPerHour": "1",
     "AutoPostGreet": "disable",
